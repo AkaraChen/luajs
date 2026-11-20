@@ -133,6 +133,8 @@ export async function runEpisode({ cell, task, params, llm, log = () => {} }) {
     final_text: finalText,
     ended,
     pass: g.pass,
+    pass_lenient: g.pass_lenient,
+    lenient_via: g.lenient_via,
     checks: g.checks,
     why: g.why,
     answer: g.answer,

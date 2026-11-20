@@ -11,6 +11,10 @@ export function tagRun(run, lang) {
   if (run.status === "invalid_call") return "invalid_call";
   const m = run.error?.message ?? "";
   if (run.error?.kind) return "tool_error_unhandled";
+  // a local named like a tool scope shadows it: `local orders = orders.search{}` then orders.get -> nil;
+  // JS: `const orders = await orders.search()` -> TDZ ReferenceError
+  if (/Cannot access '(\w+)' before initialization/.test(m) || (/attempt to call a nil value \(field '\w+'\)/.test(m) && /local\s+(\w+)\s*=\s*\1\./.test(run.code ?? ""))) return "scope_shadow";
+  if (/Unexpected token 'return'/.test(m)) return "harness_rewrite_bug";
   if (lang !== "js" && jsIsm(run.code) && /arithmetic on a string|attempt to (get length|index|call)/.test(m)) return "js_ism";
   if (/undefined global|is not available in this sandbox|is not defined|is not a function|attempt to call a nil value/.test(m)) return "unknown_api";
   if (/attempt to index a nil value|Cannot read properties of (null|undefined)/.test(m)) return "nil_null";

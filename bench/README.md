@@ -86,7 +86,7 @@ bench/
 
 ## lua-interim 与 luajs surface 的差异
 
-见 `reports/smoke-1.md` 的"临时 Lua 运行时的偏差"一节。要点：数据边界用纯 Lua 的 JSON 编解码 + 形状元表近似 ARCHITECTURE §8；
+见 `reports/smoke-1.md` §8"临时 Lua 运行时（lua-interim）和 ARCHITECTURE 的差距"。要点：数据边界用纯 Lua 的 JSON 编解码 + 形状元表近似 ARCHITECTURE §8；
 tool 入参的空表按 schema 修正；数组末尾的 null 不保留；`pairs` 顺序确定但不是插入序；没有 `parallel`（smoke 决定不提供）。
 
 ## 加一道题

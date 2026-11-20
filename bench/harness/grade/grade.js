@@ -108,15 +108,59 @@ export function pickAnswer(runs) {
   return { has: false };
 }
 
+/** Every value nested inside v (including v), plus JSON parsed out of string values. */
+function* subValues(v, depth = 0) {
+  yield v;
+  if (depth > 6) return;
+  if (typeof v === "string" && /^\s*[[{]/.test(v)) {
+    try {
+      yield* subValues(JSON.parse(v), depth + 1);
+    } catch {
+      /* not JSON */
+    }
+  } else if (v && typeof v === "object") for (const x of Object.values(v)) yield* subValues(x, depth + 1);
+}
+
+/**
+ * Lenient answer check (smoke-1 finding): models often compute the right answer
+ * but return it wrapped in a debug object, return it in an earlier run and then
+ * run a "verification" snippet, or state it only in the final message.
+ * Passes if the expected value equals ANY ok run's value or a value nested in it
+ * (not for null: too many nulls in any object), or appears in the final text.
+ * Reported next to the strict check; the strict check stays the primary metric.
+ */
+export function checkAnswerLenient(spec, runs, finalText) {
+  const { compare, value, options = {} } = spec;
+  if (compare === "any" || compare === "mentions") return checkAnswer(spec, pickAnswer(runs), finalText);
+  const text = finalText ?? "";
+  for (const r of runs) {
+    if (r.status !== "ok" || !r.has_value) continue;
+    if (checkAnswer(spec, { has: true, value: r.value }, finalText).ok) return { ok: true, via: "run_value" };
+    if (value === null) continue;
+    for (const sub of subValues(r.value))
+      if (checkAnswer(spec, { has: true, value: sub }, finalText).ok) return { ok: true, via: "nested_value" };
+  }
+  if (typeof value === "string" && text.includes(value)) return { ok: true, via: "final_text" };
+  if (value === null && /\bnull\b|没有指派|无指派|未指派|没有人|没人/.test(text)) return { ok: true, via: "final_text" };
+  if (Array.isArray(value) && value.length && value.every((x) => typeof x === "number")) {
+    const re = new RegExp(value.map(String).join("[^0-9]+"));
+    if (re.test(text)) return { ok: true, via: "final_text" };
+  }
+  return { ok: false };
+}
+
 export function grade(task, { runs, effects, before, after, finalText }) {
   const answer = pickAnswer(runs);
   const a = checkAnswer(task.expect.answer, answer, finalText);
+  const al = checkAnswerLenient(task.expect.answer, runs, finalText);
   const diff = stateDiff(before, after);
   const s = checkState(task.expect.state_diff, diff);
   const e = checkEffects(task.expect.effects, effects);
   return {
     pass: a.ok && s.ok && e.ok,
-    checks: { answer: a.ok, state_diff: s.ok, effects: e.ok },
+    pass_lenient: al.ok && s.ok && e.ok,
+    lenient_via: al.ok && !a.ok ? al.via : undefined,
+    checks: { answer: a.ok, answer_lenient: al.ok, state_diff: s.ok, effects: e.ok },
     why: { answer: a.why, state_diff: s.why, effects: e.why },
     answer,
     diff,
