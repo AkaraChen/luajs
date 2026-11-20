@@ -1,0 +1,24 @@
+id: c8-issue-title-01
+version: 1
+category: C8
+source: "自拟；反例，只需一次调用"
+hypothesis: "衡量 codemode 的固定开销（token、轮数、出错率）"
+mock:
+  world: core-v1
+  mock_version: 1
+  seed: 4217
+  patches: []
+  faults: []
+scopes: [issues]
+instruction: |
+  issue #7 的标题是什么？
+expect:
+  answer:
+    compare: mentions   # 期望字符串出现在最后一次成功 run 的返回值或模型最终回复里
+    value: "Search ignores accents"
+  state_diff: { set: {}, delete: [] }
+  effects:
+    must_call: [issues.get]
+    must_not_call: []
+    max_calls: 3
+    order: []

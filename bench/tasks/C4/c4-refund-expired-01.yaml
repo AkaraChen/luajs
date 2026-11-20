@@ -1,0 +1,26 @@
+id: c4-refund-expired-01
+version: 1
+category: C4
+source: "τ²-bench retail 退款政策改写"
+hypothesis: "先检查再写：订单已超过 7 天退货期，正确做法是不调用 orders.refund（mock 的退款接口不会替你拦）"
+mock:
+  world: core-v1
+  mock_version: 1
+  seed: 4217
+  patches:
+    - { op: set, path: /orders/1001/created_at, value: "2026-03-03T09:00:00Z" }
+    - { op: set, path: /orders/1001/status, value: delivered }
+  faults: []
+scopes: [orders, time]
+instruction: |
+  客户要求给订单 1001 退款，原因是“不想要了”。公司规定：只有下单 7 天之内、且没有取消或退款的订单才可以退款。
+  请按规定处理这个请求，并告诉我结果。
+expect:
+  answer:
+    compare: any
+  state_diff: { set: {}, delete: [] }
+  effects:
+    must_call: [orders.get]
+    must_not_call: [orders.refund]
+    max_calls: 10
+    order: []

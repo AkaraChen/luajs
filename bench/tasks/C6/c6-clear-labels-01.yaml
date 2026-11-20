@@ -1,0 +1,26 @@
+id: c6-clear-labels-01
+version: 1
+category: C6
+source: "自拟"
+hypothesis: "清空数组参数要传 []：Lua 里 {} 是对象还是数组（array() / schema 修正），JS 无此问题"
+mock:
+  world: core-v1
+  mock_version: 1
+  seed: 4217
+  patches:
+    - { op: set, path: /users/u_17/labels, value: [vip, beta] }
+  faults: []
+scopes: [users]
+instruction: |
+  把用户 u_17 的标签全部清空。
+expect:
+  answer:
+    compare: any
+  state_diff:
+    set: { /users/u_17/labels: [] }
+    delete: []
+  effects:
+    must_call: [users.set_labels]
+    must_not_call: []
+    max_calls: 6
+    order: []

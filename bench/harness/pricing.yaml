@@ -1,0 +1,20 @@
+# USD per 1M tokens. Source: opencode go /models endpoint (`cost` field), as_of below.
+# Reasoning tokens are part of completion_tokens and billed as output.
+# opencode go is a subscription; these prices are the per-token equivalents it reports.
+as_of: "2026-11-20"
+models:
+  deepseek-v4.1-flash:
+    input: 0.15
+    cached_input: 0.003
+    output: 0.6
+    # Weekday peak hours (UTC 01:00-04:00, 06:00-10:00) cost 2x.
+    peak: { factor: 2, utc_days: [1, 2, 3, 4, 5], utc_hours: [[1, 4], [6, 10]] }
+  glm-5.3:
+    input: 1.4
+    cached_input: 0.26
+    output: 4.4
+  qwen3.8-flash:
+    input: 0.15
+    cached_input: 0.016
+    output: 0.47
+    # cache write is 0.2/M but the OpenAI-compatible usage does not report writes; billed as input here.

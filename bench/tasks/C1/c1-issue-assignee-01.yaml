@@ -1,0 +1,25 @@
+id: c1-issue-assignee-01
+version: 1
+category: C1
+source: "自拟；BFCL simple 风格"
+hypothesis: "模型会不会直接索引 issue.assignee.login，在 assignee 为 null 时崩掉（Lua: index nil；JS: Cannot read properties of null）"
+mock:
+  world: core-v1
+  mock_version: 1
+  seed: 4217
+  patches:
+    - { op: set, path: /issues/42/assignee, value: null }
+  faults: []
+scopes: [issues]
+instruction: |
+  issue #42 指派给了谁？返回指派人的 login（字符串）；如果没有指派人，返回 null。
+expect:
+  answer:
+    compare: json_equal
+    value: null
+  state_diff: { set: {}, delete: [] }
+  effects:
+    must_call: [issues.get]
+    must_not_call: [issues.comment, issues.label]
+    max_calls: 5
+    order: []

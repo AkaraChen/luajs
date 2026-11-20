@@ -1,0 +1,30 @@
+id: c7-rate-limited-01
+version: 1
+category: C7
+source: "自拟"
+hypothesis: "第一次调用就被限流（结构化错误 data.code = rate_limited）：会不会重试、会不会写成死循环；失败后下一轮是否重跑"
+mock:
+  world: core-v1
+  mock_version: 1
+  seed: 4217
+  patches: []
+  faults:
+    - tool: users.get
+      times: 1
+      error:
+        kind: tool_failed
+        message: "rate limited, retry later"
+        data: { code: rate_limited, retry_after_ms: 200 }
+scopes: [users]
+instruction: |
+  用户 u_5 的邮箱是什么？直接返回邮箱字符串。
+expect:
+  answer:
+    compare: json_equal
+    value: "user5@example.com"
+  state_diff: { set: {}, delete: [] }
+  effects:
+    must_call: [users.get]
+    must_not_call: []
+    max_calls: 5
+    order: []

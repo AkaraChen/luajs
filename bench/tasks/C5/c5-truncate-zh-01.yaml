@@ -1,0 +1,25 @@
+id: c5-truncate-zh-01
+version: 1
+category: C5
+source: "自拟"
+hypothesis: "按字节截断中文（Lua string.sub / #s）会切坏 UTF-8，答案里出现 U+FFFD"
+mock:
+  world: core-v1
+  mock_version: 1
+  seed: 4217
+  patches: []
+  faults: []
+scopes: [fs]
+instruction: |
+  读取文件 docs/公告.md，取正文的前 50 个字符（按 Unicode 字符计数，标点也算）作为摘要。
+  直接返回这个字符串，不要加省略号或其他内容。
+expect:
+  answer:
+    compare: text_exact
+    value: "各位同事：为进一步提升客户服务质量，公司决定自四月一日起调整售后退款流程，所有退款申请须在下单后七日"
+  state_diff: { set: {}, delete: [] }
+  effects:
+    must_call: [fs.read]
+    must_not_call: [fs.write]
+    max_calls: 5
+    order: []

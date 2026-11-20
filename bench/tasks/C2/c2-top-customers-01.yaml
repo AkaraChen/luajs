@@ -1,0 +1,26 @@
+id: c2-top-customers-01
+version: 1
+category: C2
+source: "自拟；τ²-bench retail 风格的聚合"
+hypothesis: "按数字 customer_id 分组后排序取前 5：Lua 里数字 key 的表不能用 # / ipairs 遍历、需要自己转成数组再 table.sort；金额有小数"
+mock:
+  world: core-v1
+  mock_version: 1
+  seed: 4217
+  patches: []
+  faults: []
+scopes: [orders, time]
+instruction: |
+  统计上个月（以 time.now 返回的当前时间为准，按 UTC 自然月）每个客户的订单总额，已取消（status 为 cancelled）的订单不算。
+  返回总额最高的 5 个客户，按总额从高到低排列，格式为数组：[{customer_id: <数字>, total: <总额，数字>}, ...]。
+expect:
+  answer:
+    compare: json_equal
+    options: { numeric_tol: 0.01, loose_numeric_strings: true }
+    value: [{"customer_id":10202,"total":10975.45},{"customer_id":10234,"total":9917.25},{"customer_id":10208,"total":6890.9},{"customer_id":10221,"total":6852.66},{"customer_id":10240,"total":6184.17}]
+  state_diff: { set: {}, delete: [] }
+  effects:
+    must_call: [orders.search]
+    must_not_call: [orders.refund]
+    max_calls: 30
+    order: []

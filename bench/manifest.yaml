@@ -1,0 +1,25 @@
+# 实验矩阵（BENCH.md §4.1）。改动发给模型的内容时 bump 对应的 harness_version。
+harness_version:
+  common: 1          # surface 公共部分、判分、temperature / max_tokens 等参数
+  js: 1
+  lua-interim: 1     # 临时 Lua 运行时（wasmoon），不与将来的 luajs 结果混用
+models: [deepseek-v4.1-flash, glm-5.3, qwen3.8-flash]
+params:
+  temperature: 0.6
+  max_tokens: 16000
+  max_turns: 4
+stages:
+  smoke:
+    tasks:
+      - c1-issue-assignee-01
+      - c2-top-customers-01
+      - c3-refundable-fanout-01
+      - c4-refund-expired-01
+      - c5-truncate-zh-01
+      - c6-clear-labels-01
+      - c7-rate-limited-01
+      - c8-issue-title-01
+    langs: [js, lua-interim]
+    repeats: 1
+budget_usd: { smoke: 5, pilot: 10, full: 80 }
+concurrency: 6       # 同时进行的 episode 数（跨所有模型）

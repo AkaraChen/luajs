@@ -1,0 +1,26 @@
+id: c3-refundable-fanout-01
+version: 1
+category: C3
+source: "BFCL parallel 风格改写"
+hypothesis: "只观察扇出写法（surface 不提 parallel）：顺序循环 / 尝试 coroutine 或异步 / 自己拼批量调用"
+observe: fanout
+mock:
+  world: core-v1
+  mock_version: 1
+  seed: 4217
+  patches: []
+  faults: []
+scopes: [orders]
+instruction: |
+  客户 10234 的每一个订单现在能不能退款？先用 orders.search 找出他的全部订单，再逐个用 orders.get 查看 refundable 字段。
+  返回可以退款的订单 id 数组，按 id 升序。
+expect:
+  answer:
+    compare: json_equal
+    value: [1104,1108,1113,1117,1118]
+  state_diff: { set: {}, delete: [] }
+  effects:
+    must_call: [orders.search, orders.get]
+    must_not_call: [orders.refund]
+    max_calls: 45
+    order: ["orders.search < orders.get"]

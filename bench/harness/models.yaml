@@ -1,0 +1,12 @@
+# model id -> provider. Secrets are never stored here.
+providers:
+  opencode-go:
+    base_url: https://opencode.ai/inference/go/openai/v1
+    api: openai-chat
+    # API key: env OPENCODE_API_KEY, else ~/.eta/config.json providers[id="opencode-go"].apiKey
+    key_env: OPENCODE_API_KEY
+    eta_provider_id: opencode-go
+models:
+  deepseek-v4.1-flash: opencode-go
+  glm-5.3: opencode-go
+  qwen3.8-flash: opencode-go
