@@ -4,6 +4,8 @@ luajs 是一个面向 coding agent codemode 的 Lua 运行时，宿主为 JS（N
 
 本文只描述架构决定，不含实现代码。后续讨论和实现以本文为准。
 
+原语取舍、surface 规则与错误提示表的有效性，由自建评测集验证，方案见 [BENCH.md](BENCH.md)。
+
 ---
 
 ## 目录
@@ -609,4 +611,5 @@ declare function toolSpecs(): {
 ## 11. 待讨论
 
 - **parallel 的语义**：一个分支失败时其他分支怎么办（继续等完 / 取消未返回的 / 结果里如何表示）；并发上限。
+- **原语清单**：`parallel`、`array()`、`state` 等是否保留、是否增加 helper，以 [BENCH.md](BENCH.md) 评测产出的原语候选清单为依据。
 - **keep 的命名与覆盖规则**：eta 的做法是同名拒绝；luajs 是否跟随，以及与"同名取列表第一个"的关系。
